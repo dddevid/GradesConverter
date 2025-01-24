@@ -1,0 +1,264 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>International Grade Converter</title>
+    <style>
+        :root {
+            --bg-primary: #f4f4f4;
+            --bg-secondary: #ffffff;
+            --text-primary: #333333;
+            --text-secondary: #666666;
+            --accent-color: #4A90E2;
+            --accent-hover: #357ABD;
+            --shadow: rgba(0,0,0,0.1);
+        }
+
+        [data-theme='dark'] {
+            --bg-primary: #1a1a1a;
+            --bg-secondary: #2c2c2c;
+            --text-primary: #e0e0e0;
+            --text-secondary: #a0a0a0;
+            --accent-color: #4A90E2;
+            --accent-hover: #6AB0FF;
+            --shadow: rgba(255,255,255,0.1);
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            transition: background-color 0.3s, color 0.3s;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: var(--bg-primary);
+            color: var(--text-primary);
+            line-height: 1.6;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .container {
+            background-color: var(--bg-secondary);
+            border-radius: 12px;
+            box-shadow: 0 10px 25px var(--shadow);
+            padding: 30px;
+            width: 100%;
+            max-width: 600px;
+            text-align: center;
+        }
+
+        h1 {
+            color: var(--accent-color);
+            margin-bottom: 20px;
+        }
+
+        .theme-toggle {
+            position: absolute;
+            top: 20px;
+            right: 20px;
+            background: none;
+            border: none;
+            font-size: 24px;
+            cursor: pointer;
+        }
+
+        .select-wrapper {
+            display: flex;
+            flex-direction: column;
+            margin-bottom: 15px;
+        }
+
+        label {
+            margin-bottom: 5px;
+            color: var(--text-secondary);
+        }
+
+        select, input {
+            width: 100%;
+            padding: 10px;
+            margin-bottom: 15px;
+            border: 1px solid var(--text-secondary);
+            border-radius: 6px;
+            background-color: var(--bg-secondary);
+            color: var(--text-primary);
+        }
+
+        button {
+            background-color: var(--accent-color);
+            color: white;
+            border: none;
+            padding: 12px 20px;
+            border-radius: 6px;
+            cursor: pointer;
+            transition: background-color 0.3s;
+        }
+
+        button:hover {
+            background-color: var(--accent-hover);
+        }
+
+        #result {
+            margin-top: 20px;
+            font-weight: bold;
+            color: var(--accent-color);
+        }
+    </style>
+</head>
+<body data-theme="light">
+    <button class="theme-toggle" aria-label="Toggle Theme">🌓</button>
+    
+    <div class="container">
+        <h1>International Grade Converter</h1>
+        
+        <div class="select-wrapper">
+            <label for="originalSystem">Original Grading System:</label>
+            <select id="originalSystem">
+                <option value="italia">Italian</option>
+                <option value="usa">American (A-F)</option>
+                <option value="uk">British</option>
+                <option value="ireland">Irish</option>
+                <option value="albania">Albanian</option>
+                <option value="netherlands">Dutch</option>
+                <option value="germany">German</option>
+                <option value="finland">Finnish</option>
+            </select>
+        </div>
+
+        <div class="select-wrapper">
+            <label for="targetSystem">Target Grading System:</label>
+            <select id="targetSystem">
+                <option value="italia">Italian</option>
+                <option value="usa">American (A-F)</option>
+                <option value="uk">British</option>
+                <option value="ireland">Irish</option>
+                <option value="albania">Albanian</option>
+                <option value="netherlands">Dutch</option>
+                <option value="germany">German</option>
+                <option value="finland">Finnish</option>
+            </select>
+        </div>
+
+        <input type="text" id="gradeInput" placeholder="Enter Grade">
+        <button onclick="convertGrade()">Convert</button>
+
+        <div id="result"></div>
+    </div>
+
+    <script>
+        const gradeConversionTable = {
+            // Sistema di conversione 0-10
+            italia: {
+                usa: (grade) => {
+                    if (grade >= 9 && grade <= 10) return 'A';
+                    if (grade >= 8 && grade < 9) return 'B+';
+                    if (grade >= 7 && grade < 8) return 'B';
+                    if (grade >= 6 && grade < 7) return 'C+';
+                    if (grade >= 5.5 && grade < 6) return 'C';
+                    if (grade >= 5 && grade < 5.5) return 'D';
+                    return 'F';
+                },
+                uk: (grade) => {
+                    if (grade >= 9 && grade <= 10) return 'First Class';
+                    if (grade >= 7 && grade < 9) return 'Upper Second Class (2:1)';
+                    if (grade >= 6 && grade < 7) return 'Lower Second Class (2:2)';
+                    if (grade >= 5 && grade < 6) return 'Third Class';
+                    return 'Fail';
+                },
+                germany: (grade) => {
+                    if (grade >= 9 && grade <= 10) return '1.0-1.5';
+                    if (grade >= 8 && grade < 9) return '1.6-2.0';
+                    if (grade >= 7 && grade < 8) return '2.1-2.5';
+                    if (grade >= 6 && grade < 7) return '2.6-3.0';
+                    if (grade >= 5 && grade < 6) return '3.1-4.0';
+                    return '5.0';
+                },
+                finland: (grade) => {
+                    if (grade >= 9 && grade <= 10) return '5 (Laudatur)';
+                    if (grade >= 8 && grade < 9) return '4 (Eximia)';
+                    if (grade >= 7 && grade < 8) return '3 (Magna)';
+                    if (grade >= 6 && grade < 7) return '2 (Cum Laude)';
+                    if (grade >= 5 && grade < 6) return '1 (Lubenter)';
+                    return 'Insufficiente';
+                },
+                albania: (grade) => {
+                    if (grade >= 9 && grade <= 10) return 'Shumë mirë (Very Good)';
+                    if (grade >= 7 && grade < 9) return 'Mirë (Good)';
+                    if (grade >= 5 && grade < 7) return 'Mjaftueshëm (Sufficient)';
+                    return 'Dobët (Poor)';
+                },
+                netherlands: (grade) => {
+                    if (grade >= 9 && grade <= 10) return '10 (Uitmuntend)';
+                    if (grade >= 8 && grade < 9) return '8-9 (Zeer goed)';
+                    if (grade >= 7 && grade < 8) return '7 (Goed)';
+                    if (grade >= 6 && grade < 7) return '6 (Voldoende)';
+                    return '5 (Onvoldoende)';
+                },
+                ireland: (grade) => {
+                    if (grade >= 9 && grade <= 10) return '1st Class Honours';
+                    if (grade >= 7 && grade < 9) return '2.1 Honours';
+                    if (grade >= 6 && grade < 7) return '2.2 Honours';
+                    if (grade >= 5 && grade < 6) return '3rd Class Honours';
+                    return 'Pass/Fail';
+                }
+            },
+            // Conversione dal sistema USA
+            usa: {
+                italia: (grade) => {
+                    switch(grade.toUpperCase()) {
+                        case 'A': return 10;
+                        case 'B+': return 8.5;
+                        case 'B': return 7.5;
+                        case 'C+': return 6.5;
+                        case 'C': return 5.75;
+                        case 'D': return 5.25;
+                        case 'F': return 4;
+                        default: return 'Invalid Grade';
+                    }
+                },
+                // Aggiungere altre conversioni per USA
+            }
+            // Aggiungere altri sistemi di conversione
+        };
+
+        function convertGrade() {
+            const originalSystem = document.getElementById('originalSystem').value;
+            const targetSystem = document.getElementById('targetSystem').value;
+            const inputGrade = document.getElementById('gradeInput').value;
+            const resultDiv = document.getElementById('result');
+
+            if (originalSystem === targetSystem) {
+                resultDiv.textContent = 'Please select different systems';
+                return;
+            }
+
+            const conversionFunction = gradeConversionTable[originalSystem]?.[targetSystem];
+            
+            if (conversionFunction) {
+                const convertedGrade = conversionFunction(inputGrade);
+                resultDiv.textContent = `Converted Grade: ${convertedGrade}`;
+            } else {
+                resultDiv.textContent = 'Conversion not supported yet';
+            }
+        }
+
+        // Theme Toggle
+        const themeToggle = document.querySelector('.theme-toggle');
+        const body = document.body;
+
+        themeToggle.addEventListener('click', () => {
+            const currentTheme = body.getAttribute('data-theme');
+            const newTheme = currentTheme === 'light' ? 'dark' : 'light';
+            body.setAttribute('data-theme', newTheme);
+            
+            // Update theme toggle text
+            themeToggle.textContent = newTheme === 'light' ? '🌓' : '🌓';
+        });
+    </script>
+</body>
+</html>

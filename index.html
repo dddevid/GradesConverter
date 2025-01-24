@@ -2,6 +2,7 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>International Grade Converter</title>
     <style>
         :root {
@@ -31,6 +32,12 @@
             transition: background-color 0.3s, color 0.3s;
         }
 
+        html, body {
+            height: 100%;
+            overscroll-behavior: contain;
+            touch-action: manipulation;
+        }
+
         body {
             font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
             background-color: var(--bg-primary);
@@ -39,33 +46,37 @@
             display: flex;
             justify-content: center;
             align-items: center;
-            min-height: 100vh;
             padding: 20px;
+            overflow-x: hidden;
         }
 
         .container {
             background-color: var(--bg-secondary);
-            border-radius: 12px;
-            box-shadow: 0 10px 25px var(--shadow);
+            border-radius: 16px;
+            box-shadow: 0 15px 35px var(--shadow);
             padding: 30px;
             width: 100%;
-            max-width: 600px;
+            max-width: 500px;
             text-align: center;
-        }
-
-        h1 {
-            color: var(--accent-color);
-            margin-bottom: 20px;
+            position: relative;
         }
 
         .theme-toggle {
             position: absolute;
-            top: 20px;
-            right: 20px;
+            top: 10px;
+            right: 10px;
             background: none;
             border: none;
             font-size: 24px;
             cursor: pointer;
+            z-index: 10;
+        }
+
+        h1 {
+            color: var(--accent-color);
+            margin-bottom: 25px;
+            font-size: 1.5rem;
+            letter-spacing: -0.5px;
         }
 
         .select-wrapper {
@@ -75,28 +86,45 @@
         }
 
         label {
-            margin-bottom: 5px;
+            margin-bottom: 8px;
             color: var(--text-secondary);
+            font-size: 0.9rem;
+            text-align: left;
         }
 
         select, input {
             width: 100%;
-            padding: 10px;
+            padding: 12px;
             margin-bottom: 15px;
             border: 1px solid var(--text-secondary);
-            border-radius: 6px;
+            border-radius: 8px;
             background-color: var(--bg-secondary);
             color: var(--text-primary);
+            font-size: 1rem;
+            appearance: none;
+            position: relative;
+        }
+
+        select {
+            background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='24' height='24' viewBox='0 0 24 24' fill='none' stroke='%23666666' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpolyline points='6 9 12 15 18 9'%3E%3C/polyline%3E%3C/svg%3E");
+            background-repeat: no-repeat;
+            background-position: right 10px center;
         }
 
         button {
             background-color: var(--accent-color);
             color: white;
             border: none;
-            padding: 12px 20px;
-            border-radius: 6px;
+            padding: 14px 20px;
+            border-radius: 8px;
             cursor: pointer;
-            transition: background-color 0.3s;
+            transition: background-color 0.3s, transform 0.1s;
+            font-size: 1rem;
+            width: 100%;
+        }
+
+        button:active {
+            transform: scale(0.98);
         }
 
         button:hover {
@@ -107,6 +135,41 @@
             margin-top: 20px;
             font-weight: bold;
             color: var(--accent-color);
+            font-size: 1.1rem;
+            padding: 10px;
+            border-radius: 8px;
+            background-color: rgba(74,144,226,0.1);
+        }
+
+        @media (max-width: 480px) {
+            body {
+                padding: 10px;
+            }
+
+            .container {
+                padding: 20px;
+                margin: 0;
+                width: calc(100% - 20px);
+                max-width: none;
+            }
+
+            h1 {
+                font-size: 1.3rem;
+            }
+
+            select, input, button {
+                font-size: 0.95rem;
+                padding: 10px;
+            }
+        }
+
+        @media (max-width: 767px) {
+            input[type="text"], 
+            input[type="number"], 
+            input[type="password"], 
+            select {
+                font-size: 16px;
+            }
         }
     </style>
 </head>
@@ -117,7 +180,7 @@
         <h1>International Grade Converter</h1>
         
         <div class="select-wrapper">
-            <label for="originalSystem">Original Grading System:</label>
+            <label for="originalSystem">Original System:</label>
             <select id="originalSystem">
                 <option value="italia">Italian</option>
                 <option value="usa">American (A-F)</option>
@@ -131,7 +194,7 @@
         </div>
 
         <div class="select-wrapper">
-            <label for="targetSystem">Target Grading System:</label>
+            <label for="targetSystem">Target System:</label>
             <select id="targetSystem">
                 <option value="italia">Italian</option>
                 <option value="usa">American (A-F)</option>
@@ -152,9 +215,11 @@
 
     <script>
         const gradeConversionTable = {
-            // Sistema di conversione 0-10
+            // Conversioni dal sistema ITALIANO
             italia: {
                 usa: (grade) => {
+                    grade = parseFloat(grade);
+                    if (isNaN(grade)) return 'Invalid Grade';
                     if (grade >= 9 && grade <= 10) return 'A';
                     if (grade >= 8 && grade < 9) return 'B+';
                     if (grade >= 7 && grade < 8) return 'B';
@@ -164,13 +229,17 @@
                     return 'F';
                 },
                 uk: (grade) => {
-                    if (grade >= 9 && grade <= 10) return 'First Class';
-                    if (grade >= 7 && grade < 9) return 'Upper Second Class (2:1)';
-                    if (grade >= 6 && grade < 7) return 'Lower Second Class (2:2)';
-                    if (grade >= 5 && grade < 6) return 'Third Class';
+                    grade = parseFloat(grade);
+                    if (isNaN(grade)) return 'Invalid Grade';
+                    if (grade >= 9 && grade <= 10) return 'First Class (1st)';
+                    if (grade >= 7 && grade < 9) return 'Upper Second (2:1)';
+                    if (grade >= 6 && grade < 7) return 'Lower Second (2:2)';
+                    if (grade >= 5 && grade < 6) return 'Third Class (3rd)';
                     return 'Fail';
                 },
                 germany: (grade) => {
+                    grade = parseFloat(grade);
+                    if (isNaN(grade)) return 'Invalid Grade';
                     if (grade >= 9 && grade <= 10) return '1.0-1.5';
                     if (grade >= 8 && grade < 9) return '1.6-2.0';
                     if (grade >= 7 && grade < 8) return '2.1-2.5';
@@ -178,39 +247,49 @@
                     if (grade >= 5 && grade < 6) return '3.1-4.0';
                     return '5.0';
                 },
-                finland: (grade) => {
-                    if (grade >= 9 && grade <= 10) return '5 (Laudatur)';
-                    if (grade >= 8 && grade < 9) return '4 (Eximia)';
-                    if (grade >= 7 && grade < 8) return '3 (Magna)';
-                    if (grade >= 6 && grade < 7) return '2 (Cum Laude)';
-                    if (grade >= 5 && grade < 6) return '1 (Lubenter)';
-                    return 'Insufficiente';
-                },
-                albania: (grade) => {
-                    if (grade >= 9 && grade <= 10) return 'Shumë mirë (Very Good)';
-                    if (grade >= 7 && grade < 9) return 'Mirë (Good)';
-                    if (grade >= 5 && grade < 7) return 'Mjaftueshëm (Sufficient)';
-                    return 'Dobët (Poor)';
-                },
-                netherlands: (grade) => {
-                    if (grade >= 9 && grade <= 10) return '10 (Uitmuntend)';
-                    if (grade >= 8 && grade < 9) return '8-9 (Zeer goed)';
-                    if (grade >= 7 && grade < 8) return '7 (Goed)';
-                    if (grade >= 6 && grade < 7) return '6 (Voldoende)';
-                    return '5 (Onvoldoende)';
-                },
                 ireland: (grade) => {
+                    grade = parseFloat(grade);
+                    if (isNaN(grade)) return 'Invalid Grade';
                     if (grade >= 9 && grade <= 10) return '1st Class Honours';
                     if (grade >= 7 && grade < 9) return '2.1 Honours';
                     if (grade >= 6 && grade < 7) return '2.2 Honours';
                     if (grade >= 5 && grade < 6) return '3rd Class Honours';
                     return 'Pass/Fail';
+                },
+                finland: (grade) => {
+                    grade = parseFloat(grade);
+                    if (isNaN(grade)) return 'Invalid Grade';
+                    if (grade >= 9 && grade <= 10) return '5 (Laudatur)';
+                    if (grade >= 8 && grade < 9) return '4 (Eximia)';
+                    if (grade >= 7 && grade < 8) return '3 (Magna)';
+                    if (grade >= 6 && grade < 7) return '2 (Cum Laude)';
+                    if (grade >= 5 && grade < 6) return '1 (Lubenter)';
+                    return 'Insufficient';
+                },
+                albania: (grade) => {
+                    grade = parseFloat(grade);
+                    if (isNaN(grade)) return 'Invalid Grade';
+                    if (grade >= 9 && grade <= 10) return 'Very Good (10)';
+                    if (grade >= 7 && grade < 9) return 'Good (8-9)';
+                    if (grade >= 5 && grade < 7) return 'Sufficient (6-7)';
+                    return 'Poor (5)';
+                },
+                netherlands: (grade) => {
+                    grade = parseFloat(grade);
+                    if (isNaN(grade)) return 'Invalid Grade';
+                    if (grade >= 9 && grade <= 10) return '10 (Excellent)';
+                    if (grade >= 8 && grade < 9) return '8-9 (Very Good)';
+                    if (grade >= 7 && grade < 8) return '7 (Good)';
+                    if (grade >= 6 && grade < 7) return '6 (Sufficient)';
+                    return '5 (Insufficient)';
                 }
             },
-            // Conversione dal sistema USA
+            
+            // Conversioni dal sistema AMERICANO
             usa: {
                 italia: (grade) => {
-                    switch(grade.toUpperCase()) {
+                    grade = grade.toUpperCase();
+                    switch(grade) {
                         case 'A': return 10;
                         case 'B+': return 8.5;
                         case 'B': return 7.5;
@@ -220,30 +299,38 @@
                         case 'F': return 4;
                         default: return 'Invalid Grade';
                     }
-                },
-                // Aggiungere altre conversioni per USA
-            }
-            // Aggiungere altri sistemi di conversione
+                }
+            },
+
+            // Altre conversioni possono essere aggiunte qui
         };
 
+        // Funzione principale di conversione
         function convertGrade() {
             const originalSystem = document.getElementById('originalSystem').value;
             const targetSystem = document.getElementById('targetSystem').value;
-            const inputGrade = document.getElementById('gradeInput').value;
+            const inputGrade = document.getElementById('gradeInput').value.trim();
             const resultDiv = document.getElementById('result');
 
+            // Controllo sistemi uguali
             if (originalSystem === targetSystem) {
-                resultDiv.textContent = 'Please select different systems';
+                resultDiv.textContent = 'Select different systems';
                 return;
             }
 
+            // Trova la funzione di conversione
             const conversionFunction = gradeConversionTable[originalSystem]?.[targetSystem];
             
+            // Esegui conversione
             if (conversionFunction) {
-                const convertedGrade = conversionFunction(inputGrade);
-                resultDiv.textContent = `Converted Grade: ${convertedGrade}`;
+                try {
+                    const convertedGrade = conversionFunction(inputGrade);
+                    resultDiv.textContent = `Converted Grade: ${convertedGrade}`;
+                } catch (error) {
+                    resultDiv.textContent = 'Conversion error';
+                }
             } else {
-                resultDiv.textContent = 'Conversion not supported yet';
+                resultDiv.textContent = 'Conversion not supported';
             }
         }
 
@@ -255,9 +342,7 @@
             const currentTheme = body.getAttribute('data-theme');
             const newTheme = currentTheme === 'light' ? 'dark' : 'light';
             body.setAttribute('data-theme', newTheme);
-            
-            // Update theme toggle text
-            themeToggle.textContent = newTheme === 'light' ? '🌓' : '🌓';
+            themeToggle.textContent = '🌓';
         });
     </script>
 </body>
